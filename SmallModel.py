@@ -156,7 +156,7 @@ def loadModel(fileName: str, modelChar: str) -> SmolBoi:
 	return model
 
 def loadModels(modelChar: str = "H", trainType: str = "COMBINED") -> list[SmolBoi]:
-	if (trainType not in ["COMBINED", "HAND_ONLY", "MNIST_ONLY"]):
+	if (trainType not in ["COMBINED", "HAND_ONLY", "MNIST_ONLY", "COMB_ADJ"]):
 		raise ValueError(f"Invalid trainType of {trainType}. Please pass 'COMBINED', 'HAND_ONLY', or 'MNIST_ONLY'")
 	
 	modelFolder = f"SavedModels/MODEL_{modelChar}/{trainType}/"
@@ -261,8 +261,8 @@ def showAllModels(data: list[DataPoint]):
 	aveLossHist = []
 	
 	modelFrame = 'H'
-	typeTrain = ["COMBINED", "HAND_ONLY", "MNIST_ONLY"]
-	typeTrainIdx = 0
+	typeTrain = ["COMBINED", "HAND_ONLY", "MNIST_ONLY", "COMB_ADJ"]
+	typeTrainIdx = 0-1
 	models = loadModels(modelFrame, typeTrain[typeTrainIdx])
 	
 	for mdl in models:
@@ -273,7 +273,7 @@ def showAllModels(data: list[DataPoint]):
 		recallHist.append(rec)
 		totalLossHist.append(tLoss)
 		aveLossHist.append(aLoss)
-	
+	print("Here")
 	for i in range(len(accuracyHist)):
 		line = [
 			f"Model {i+1}",
@@ -285,7 +285,7 @@ def showAllModels(data: list[DataPoint]):
 			str(aveLossHist[i])
 		]
 		print('\t'.join(line))
-	input()
+	input("Done")
 
 
 def main():
@@ -302,7 +302,7 @@ def main():
 	numTestMNIST = -1
 	
 	## Load model
-	model = loadModel("SavedModels/Model_H/COMBINED/MODEL_H-10.pkl", 'H')
+	#model = loadModel("SavedModels/Model_H/COMB_ADJ/MODEL_H-10.pkl", 'H')
 	
 	## Load data
 	loader.loadData(
@@ -317,32 +317,34 @@ def main():
 		numTestMNIST = numTestMNIST
 	)
 	data = loader.getLoadedData(flatten=True, includeAdjusted=False)
+	showAllModels(data)
+	
 	#evalDataGroup(model, data)
 	#classifyPoints(model, data)
 	
-	groupData = sortData(data)
+	# groupData = sortData(data)
 	
-	for name, lst in groupData.items():
-		print(name)
-		acc, prec, spec, rec, tLoss, aLoss = evalDataGroup(model, lst)
-		print(f"Accuracy: {acc:.5f}")
-		print(f"Precision: {prec:.5f}")
-		print(f"Specificity: {spec:.5f}")
-		print(f"Recall: {rec:.5f}")
-		print(f"Total loss: {tLoss:.5f}")
-		print(f"Average loss: {aLoss:.5f}", end="\n\n")
+	# for name, lst in groupData.items():
+	# 	print(name)
+	# 	acc, prec, spec, rec, tLoss, aLoss = evalDataGroup(model, lst)
+	# 	print(f"Accuracy: {acc:.5f}")
+	# 	print(f"Precision: {prec:.5f}")
+	# 	print(f"Specificity: {spec:.5f}")
+	# 	print(f"Recall: {rec:.5f}")
+	# 	print(f"Total loss: {tLoss:.5f}")
+	# 	print(f"Average loss: {aLoss:.5f}", end="\n\n")
 	
-	if (len(list(groupData)) > 1):
-		acc, prec, spec, rec, tLoss, aLoss = evalDataGroup(model, data)
+	# if (len(list(groupData)) > 1):
+	# 	acc, prec, spec, rec, tLoss, aLoss = evalDataGroup(model, data)
 		
-		print("Overall")
-		print(f"Accuracy: {acc:.5f}")
-		print(f"Precision: {prec:.5f}")
-		print(f"Specificity: {spec:.5f}")
-		print(f"Recall: {rec:.5f}")
-		print(f"Total loss: {tLoss:.5f}")
-		print(f"Average loss: {aLoss:.5f}")
-	input()
+	# 	print("Overall")
+	# 	print(f"Accuracy: {acc:.5f}")
+	# 	print(f"Precision: {prec:.5f}")
+	# 	print(f"Specificity: {spec:.5f}")
+	# 	print(f"Recall: {rec:.5f}")
+	# 	print(f"Total loss: {tLoss:.5f}")
+	# 	print(f"Average loss: {aLoss:.5f}")
+	# input()
 
 if (__name__ == "__main__"):
 	main()

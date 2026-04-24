@@ -362,6 +362,7 @@ class DataLoader:
 				for i in range(len(data[digit])):
 					if (type(data[i][digit].input) != np.ndarray):
 						data[i][digit].normalize()
+		
 		return data
 	
 	"""

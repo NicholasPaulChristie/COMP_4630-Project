@@ -4,7 +4,7 @@ import numpy as np
 class DataPoint:
 	__slots__ = ("input", "expected", "name", "sourceName")
 	
-	def __init__(self, input, expectedIdx: int | None, imgName: str, sourceName: str) -> None:
+	def __init__(self, input, expectedIdx: int | None, imgName: str, sourceName: str):
 		self.input = input
 		self.expected = expectedIdx
 		self.name = imgName
@@ -40,10 +40,10 @@ class Epoch:
 		elif (isinstance(point, Iterable)):
 			self.points.extend([pt for pt in point if isinstance(pt, DataPoint)])
 	
-	def shuffle(self) -> None:
+	def shuffle(self):
 		np.random.shuffle(self.points)
 	
-	def reset(self) -> None:
+	def reset(self):
 		self.points.clear()
 	
 	def normalize(self):
