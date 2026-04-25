@@ -1,6 +1,5 @@
 from DataPoint import DataPoint, Epoch
 from DataLoader import DataLoader
-from ModelLoader import loadModelFrame
 from Transforms import *
 import torch.nn as nn
 import torchmetrics
@@ -10,13 +9,28 @@ import torch
 import os
 
 ## The only reason I have this hardcoded this way is because I do not currently
-## have access to mps or a gpu or anyway to access my gpu
+## have access to mps or a gpu or any way to access my gpu
 DEVICE = "cpu"
 
 class TrainingModel(nn.Module):
-	def __init__(self, modelChar: str = 'A'):
+	def __init__(self):
 		super().__init__()
-		self.network = loadModelFrame(modelChar)
+		self.network = nn.Sequential(
+			nn.Conv2d(1, 8, kernel_size=5),
+			nn.SiLU(),
+			nn.MaxPool2d(kernel_size=2, stride=2),
+			
+			nn.Conv2d(8, 16, kernel_size=5),
+			nn.ReLU(0.1),
+			nn.MaxPool2d(kernel_size=2, stride=2),
+			nn.Flatten(),
+			
+			nn.Linear(400, 120),
+			nn.SiLU(),
+			nn.Linear(120, 84),
+			nn.LeakyReLU(0.1),
+			nn.Linear(84, 10) ## 10 digit output
+		)
 	
 	def forward(self, X):
 		return self.network(X)
@@ -123,8 +137,6 @@ def genConfusionMtrx(model, epochs: list[Epoch], testData):
 
 
 def main():
-	modelFrame = 'H'
-	
 	numAdjs = 4
 	adjsPerImg = 5
 	useAdjusts = True
@@ -176,9 +188,8 @@ def main():
 	testData = loader.getTestData(
 		includeAdjusted = useAdjusts
 	)
-	model = TrainingModel(modelFrame)
-	# print(np.sum([len(e) for e in epochs]))
-	# input()
+	model = TrainingModel()
+	
 	train(
 		model = model, 
 		epochs = epochs, 
@@ -190,10 +201,10 @@ def main():
 	input()
 
 	modelNum = 1
-	modelPath = f"SavedModels/Model_{modelFrame}/COMB_ADJ/Model_{modelFrame}-{modelNum}.pkl"
+	modelPath = f"SavedModels/COMB_ADJ/Model_H-{modelNum}.pkl"
 	while (os.path.exists(modelPath)):
 		modelNum += 1
-		modelPath = f"SavedModels/Model_{modelFrame}/COMB_ADJ/Model_{modelFrame}-{modelNum}.pkl"
+		modelPath = f"SavedModels/COMB_ADJ/Model_H-{modelNum}.pkl"
 	saveModel(modelPath, model)
 
 if (__name__ == "__main__"):

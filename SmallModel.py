@@ -1,4 +1,3 @@
-from ModelLoader import loadModelFrame
 from DataLoader import DataLoader
 from DataPoint import DataPoint
 from MyIO import MyIO
@@ -9,16 +8,28 @@ import numpy as np
 import pickle
 import torch
 
-import glob
-import os
-
 IO = MyIO()
 DEVICE = "cpu"
 
 class SmolBoi(nn.Module):
-	def __init__(self, modelChar: str = "A"):
+	def __init__(self):
 		super().__init__()
-		self.network = loadModelFrame(modelChar)
+		self.network = nn.Sequential(
+			nn.Conv2d(1, 8, kernel_size=5),
+			nn.SiLU(),
+			nn.MaxPool2d(kernel_size=2, stride=2),
+			
+			nn.Conv2d(8, 16, kernel_size=5),
+			nn.ReLU(0.1),
+			nn.MaxPool2d(kernel_size=2, stride=2),
+			nn.Flatten(),
+			
+			nn.Linear(400, 120),
+			nn.SiLU(),
+			nn.Linear(120, 84),
+			nn.LeakyReLU(0.1),
+			nn.Linear(84, 10) ## 10 digit output
+		)
 	
 	def forward(self, X):
 		return self.network(X)
@@ -147,19 +158,19 @@ def pointToTensor(point: DataPoint):
 	return torch.from_numpy(point.input).float()
 
 
-def loadModel(fileName: str, modelChar: str) -> SmolBoi:
-	model = SmolBoi(modelChar)
+def loadModel(fileName: str) -> SmolBoi:
+	model = SmolBoi()
 	with open(fileName, "rb") as f:
 		model.load_state_dict(pickle.load(f))
 	model.eval() ## Set to evaluation mode by default
 	
 	return model
 
-def loadModels(modelChar: str = "H", trainType: str = "COMBINED") -> list[SmolBoi]:
+def loadModels(trainType: str = "COMBINED") -> list[SmolBoi]:
 	if (trainType not in ["COMBINED", "HAND_ONLY", "MNIST_ONLY", "COMB_ADJ"]):
 		raise ValueError(f"Invalid trainType of {trainType}. Please pass 'COMBINED', 'HAND_ONLY', or 'MNIST_ONLY'")
 	
-	modelFolder = f"SavedModels/MODEL_{modelChar}/{trainType}/"
+	modelFolder = f"SavedModels/{trainType}/"
 	baseFiles = IO.getFiles(modelFolder, ".pkl")
 	
 	modelDict = {
@@ -168,7 +179,7 @@ def loadModels(modelChar: str = "H", trainType: str = "COMBINED") -> list[SmolBo
 	}
 	
 	return [
-		loadModel(modelDict[idx], modelChar)
+		loadModel(modelDict[idx])
 		for idx in sorted(list(modelDict))
 	]
 
@@ -260,10 +271,9 @@ def showAllModels(data: list[DataPoint]):
 	totalLossHist = []
 	aveLossHist = []
 	
-	modelFrame = 'H'
 	typeTrain = ["COMBINED", "HAND_ONLY", "MNIST_ONLY", "COMB_ADJ"]
 	typeTrainIdx = 0-1
-	models = loadModels(modelFrame, typeTrain[typeTrainIdx])
+	models = loadModels(typeTrain[typeTrainIdx])
 	
 	for mdl in models:
 		acc, prec, spec, rec, tLoss, aLoss = evalDataGroup(mdl, data)
@@ -273,7 +283,7 @@ def showAllModels(data: list[DataPoint]):
 		recallHist.append(rec)
 		totalLossHist.append(tLoss)
 		aveLossHist.append(aLoss)
-	print("Here")
+	
 	for i in range(len(accuracyHist)):
 		line = [
 			f"Model {i+1}",
@@ -285,7 +295,6 @@ def showAllModels(data: list[DataPoint]):
 			str(aveLossHist[i])
 		]
 		print('\t'.join(line))
-	input("Done")
 
 
 def main():
