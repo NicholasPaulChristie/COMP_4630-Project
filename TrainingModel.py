@@ -145,7 +145,7 @@ def main():
 	batchSize = 20
 	learnRate = 0.0078125
 	decayStep = 20
-	decayRate = 29/32.0#0.875
+	decayRate = 29/32.0
 	
 	includeHand = True
 	includeFont = False
@@ -198,7 +198,6 @@ def main():
 		decayStep = decayStep, 
 		gamma = decayRate
 	)
-	input()
 
 	modelNum = 1
 	modelPath = f"SavedModels/COMB_ADJ/Model_H-{modelNum}.pkl"
